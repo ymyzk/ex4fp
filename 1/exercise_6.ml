@@ -4,6 +4,23 @@ type 'a seq = Cons of 'a * (unit -> 'a seq);;
 type ('a, 'b) sum = Left of 'a | Right of 'b;;
 
 (* Exercise 6.2 *)
+let rec int_of_nat = function
+  | Zero           -> 0
+  | OneMoreThan m' -> 1 + int_of_nat m'
+;;
+
+let rec add m n =
+  match m with
+  | Zero           -> n
+  | OneMoreThan m' -> OneMoreThan (add m' n)
+;;
+
+let rec mul m n =
+  match m with
+  | Zero           -> Zero
+  | OneMoreThan m' -> add n (mul m' n)
+;;
+
 let rec monus m n =
   match m, n with
   | Zero, _ -> Zero
@@ -16,14 +33,39 @@ let one   = OneMoreThan zero;;
 let two   = OneMoreThan one;;
 let three = OneMoreThan two;;
 
-monus zero zero;;
-(* nat = Zero *)
-monus two zero;;
-(* nat = OneMoreThan (OneMoreThan Zero) *)
-monus three one;;
-(* nat = OneMoreThan (OneMoreThan Zero) *)
-monus one three;;
-(* nat = Zero *)
+int_of_nat zero;;
+(* int = 0 *)
+int_of_nat one;;
+(* int = 1 *)
+int_of_nat two;;
+(* int = 2 *)
+int_of_nat three;;
+(* int = 3 *)
+
+int_of_nat (add zero zero);;
+(* int = 0 *)
+int_of_nat (add two zero);;
+(* int = 2 *)
+int_of_nat (add three two);;
+(* int = 5 *)
+
+int_of_nat (mul zero zero);;
+(* int = 0 *)
+int_of_nat (mul two zero);;
+(* int = 0 *)
+int_of_nat (mul three one);;
+(* int = 3 *)
+int_of_nat (mul three two);;
+(* int = 6 *)
+
+int_of_nat (monus zero zero);;
+(* int = 0 *)
+int_of_nat (monus two zero);;
+(* int = 2 *)
+int_of_nat (monus three one);;
+(* int = 2 *)
+int_of_nat (monus one three);;
+(* int = 0 *)
 
 (* Exercise 6.6 *)
 let rec reflect = function
