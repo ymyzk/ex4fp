@@ -109,7 +109,7 @@ nthseq (5569 + 3000) primes;;
 (* int = 88397 *)
 
 (* Exercise 6.10.1 *)
-let func_1 x y =
+let func_1 (x, y) =
   match y with
   | Left z  -> Left (x, z)
   | Right z -> Right (x, z)
