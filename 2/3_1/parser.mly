@@ -3,11 +3,13 @@ open Syntax
 %}
 
 %token LPAREN RPAREN SEMISEMI
-%token PLUS MULT LT
+%token PLUS MULT LT LAND LOR
 %token IF THEN ELSE TRUE FALSE
 
 %token <int> INTV
 %token <Syntax.id> ID
+
+%right LAND LOR
 
 %start toplevel
 %type <Syntax.program> toplevel
@@ -18,6 +20,14 @@ toplevel :
 
 Expr :
     IfExpr { $1 }
+  | LORExpr { $1 }
+
+LORExpr :
+    LANDExpr LOR LANDExpr { BinOp (Lor, $1, $3) }
+  | LANDExpr { $1 }
+
+LANDExpr :
+    LTExpr LAND LTExpr { BinOp (Land, $1, $3) }
   | LTExpr { $1 }
 
 LTExpr :

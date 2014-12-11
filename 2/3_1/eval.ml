@@ -23,6 +23,10 @@ let rec apply_prim op arg1 arg2 = match op, arg1, arg2 with
   | Mult, _, _ -> err ("Both arguments must be integer: *")
   | Lt, IntV i1, IntV i2 -> BoolV (i1 < i2)
   | Lt, _, _ -> err ("Both arguments must be integer: <")
+  | Land, BoolV b1, BoolV b2 -> BoolV (b1 && b2)
+  | Land, _, _ -> err ("Both arguments must be boolean: &&")
+  | Lor, BoolV b1, BoolV b2 -> BoolV (b1 || b2)
+  | Lor, _, _ -> err ("Both arguments must be boolean: ||")
 
 let rec eval_exp env = function
     Var x ->
