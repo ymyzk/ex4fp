@@ -63,4 +63,8 @@ LetExpr :
     LET ID EQ Expr IN Expr { LetExp ($2, $4, $6) }
 
 FunExpr :
-    FUN ID RARROW Expr { FunExp ($2, $4) }
+    FUN ID FunSubExpr { FunExp ($2, $3) }
+
+FunSubExpr :
+    RARROW Expr { $2 }
+  | ID FunSubExpr { FunExp ($1, $2) }
