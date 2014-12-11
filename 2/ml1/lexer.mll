@@ -7,6 +7,11 @@ let reservedWords = [
   ("then", Parser.THEN);
   ("true", Parser.TRUE);
 ]
+
+(*
+exception LexError of string
+let lex_err s = raise (LexError s)
+*)
 }
 
 rule main = parse
@@ -33,3 +38,5 @@ rule main = parse
       _ -> Parser.ID id
      }
 | eof { exit 0 }
+
+(* | _ { lex_err "" } *)
