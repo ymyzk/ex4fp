@@ -4,7 +4,7 @@ open Syntax
 
 %token LPAREN RPAREN SEMISEMI
 %token PLUS MULT LT LAND LOR EQ RARROW
-%token IF THEN ELSE TRUE FALSE LET IN FUN
+%token IF THEN ELSE TRUE FALSE LET IN FUN REC
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -17,24 +17,22 @@ open Syntax
 
 toplevel :
     Expr SEMISEMI { Exp $1 }
-  | LET ID LetDecl SEMISEMI { Decl ($2, $3) }
-
-LetDecl :
-    EQ Expr { $2 }
-  | ID LetDecl { FunExp ($1, $2) }
+  | LET ID EQ Expr SEMISEMI { Decl ($2, $4) }
+  | LET REC ID EQ FUN ID RARROW Expr SEMISEMI { RecDecl ($3, $6, $8) }
 
 Expr :
     IfExpr { $1 }
-  | LetExpr { $1 }
   | FunExpr { $1 }
+  | LetExpr { $1 }
+  | LetRecExpr { $1 }
   | LORExpr { $1 }
 
 LORExpr :
-    LANDExpr LOR LANDExpr { BinOp (Lor, $1, $3) }
+    LANDExpr LOR LORExpr { BinOp (Lor, $1, $3) }
   | LANDExpr { $1 }
 
 LANDExpr :
-    LTExpr LAND LTExpr { BinOp (Land, $1, $3) }
+    LTExpr LAND LANDExpr { BinOp (Land, $1, $3) }
   | LTExpr { $1 }
 
 LTExpr :
@@ -46,11 +44,11 @@ PExpr :
   | MExpr { $1 }
 
 MExpr :
-    MExpr MULT AExpr { BinOp (Mult, $1, $3) }
+    MExpr MULT AppExpr { BinOp (Mult, $1, $3) }
   | AppExpr { $1 }
 
 AppExpr :
-  AppExpr AExpr { AppExp ($1, $2) }
+    AppExpr AExpr { AppExp ($1, $2) }
   | AExpr { $1 }
 
 AExpr :
@@ -67,8 +65,15 @@ LetExpr :
     LET ID EQ Expr IN Expr { LetExp ($2, $4, $6) }
 
 FunExpr :
+    FUN ID RARROW Expr { FunExp ($2, $4) }
+
+/*
     FUN ID FunSubExpr { FunExp ($2, $3) }
 
 FunSubExpr :
     RARROW Expr { $2 }
   | ID FunSubExpr { FunExp ($1, $2) }
+*/
+
+LetRecExpr :
+  LET REC ID EQ FUN ID RARROW Expr IN Expr { LetRecExp ($3, $6, $8, $10) }
