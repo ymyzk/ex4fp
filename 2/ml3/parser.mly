@@ -17,12 +17,11 @@ open Syntax
 
 toplevel :
     Expr SEMISEMI { Exp $1 }
-  | LET ID EQ Expr SEMISEMI { Decl ($2, $4) }
-  | LET ID LetFuncDecl SEMISEMI { Decl ($2, $3) }
+  | LET ID LetDecl SEMISEMI { Decl ($2, $3) }
 
-LetFuncDecl :
+LetDecl :
     EQ Expr { $2 }
-  | ID LetFuncDecl { FunExp ($1, $2) }
+  | ID LetDecl { FunExp ($1, $2) }
 
 Expr :
     IfExpr { $1 }
