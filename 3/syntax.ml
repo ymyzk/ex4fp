@@ -19,10 +19,26 @@ type program =
   | Decl of id * exp
   | RecDecl of id * id * exp
 
+type tyvar = int
+
 type ty =
     TyInt
   | TyBool
+  | TyVar of tyvar
+  | TyFun of ty * ty
 
 let pp_ty = function
     TyInt  -> print_string "int"
   | TyBool -> print_string "bool"
+
+let fresh_tyvar =
+  let counter = ref 0 in
+  let body () =
+    let v = !counter in
+      counter := v + 1; v
+  in body
+
+let rec freevar_ty = function
+    TyVar var -> MySet.insert var MySet.empty
+  | TyFun (ty1, ty2) -> MySet.union (freevar_ty ty1) (freevar_ty ty2)
+  | _ -> MySet.empty
