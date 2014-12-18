@@ -17,8 +17,12 @@ open Syntax
 
 toplevel :
     Expr SEMISEMI { Exp $1 }
-  | LET ID EQ Expr SEMISEMI { Decl ($2, $4) }
+  | LET ID LetDeclSubExpr { Decl ($2, $3) }
   | LET REC ID EQ FUN ID RARROW Expr SEMISEMI { RecDecl ($3, $6, $8) }
+
+LetDeclSubExpr :
+    EQ Expr SEMISEMI { $2 }
+  | ID LetDeclSubExpr { FunExp ($1, $2) }
 
 Expr :
     IfExpr { $1 }
@@ -62,18 +66,18 @@ IfExpr :
     IF Expr THEN Expr ELSE Expr { IfExp ($2, $4, $6) }
 
 LetExpr :
-    LET ID EQ Expr IN Expr { LetExp ($2, $4, $6) }
+    LET ID LetSubExpr IN Expr { LetExp ($2, $3, $5) }
+
+LetSubExpr :
+    EQ Expr { $2 }
+  | ID LetSubExpr { FunExp ($1, $2) }
 
 FunExpr :
-    FUN ID RARROW Expr { FunExp ($2, $4) }
-
-/*
     FUN ID FunSubExpr { FunExp ($2, $3) }
 
 FunSubExpr :
     RARROW Expr { $2 }
   | ID FunSubExpr { FunExp ($1, $2) }
-*/
 
 LetRecExpr :
   LET REC ID EQ FUN ID RARROW Expr IN Expr { LetRecExp ($3, $6, $8, $10) }
