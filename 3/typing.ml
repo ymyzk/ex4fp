@@ -6,6 +6,7 @@ let err s = raise (Error s)
 
 (* Type Environment *)
 type tyenv = ty Environment.t
+type subst = (tyvar * ty) list
 
 let ty_prim op ty1 ty2 = match op with
     Plus -> (match ty1, ty2 with
@@ -53,3 +54,12 @@ let rec ty_exp tyenv = function
 let ty_decl tyenv = function
     Exp e -> ty_exp tyenv e
   | _ -> err ("Not Implemented!")
+
+let rec subst_type sub ty0 = match ty0 with
+    TyInt -> TyInt
+  | TyBool -> TyBool
+  | TyFun (ty1, ty2) -> TyFun (subst_type sub ty1, subst_type sub ty2)
+  | TyVar v -> (match sub with
+      [] -> err ("Error")
+    | s :: subt -> (match s with
+        tyv, t -> if tyv = v then subst_type sub t else subst_type subt ty0))
