@@ -30,11 +30,11 @@ let rec unify l = match l with
       _, _ when ty1 = ty2 -> unify t
     | TyVar v, ty3
     | ty3, TyVar v ->
-        if MySet.member v (freevar_ty ty3) then err ("Error: unify ty")
+        if MySet.member v (freevar_ty ty3) then err ("Type Error: unify ty")
         else (v, ty3) :: (unify (subst_eqs [(v, ty3)] t))
     | TyFun (ty11, ty12), TyFun (ty21, ty22) ->
         unify ((ty11, ty21) :: (ty12, ty22) :: t)
-    | _ -> err ("Error: unify")
+    | _ -> err ("Type Error: unify")
 
 let ty_prim op ty1 ty2 = match op with
     Plus | Mult -> ([(ty1, TyInt); (ty2, TyInt)], TyInt)
@@ -68,6 +68,12 @@ let rec ty_exp tyenv = function
       let domty = TyVar (fresh_tyvar ()) in
       let s, ranty = ty_exp (Environment.extend id domty tyenv) exp in
       (s, TyFun (subst_type s domty, ranty))
+  | AppExp (exp1, exp2) ->
+      let (s1, ty1) = ty_exp tyenv exp1 in
+      let (s2, ty2) = ty_exp tyenv exp2 in
+      let domty = TyVar (fresh_tyvar ()) in
+      let eqs = (ty1, TyFun (ty2, domty)) :: (eqs_of_subst s1) @ (eqs_of_subst s2) in
+      let s3 = unify eqs in (s3, subst_type s3 domty)
   | _ -> err ("Not Implemented!")
 
 let ty_decl tyenv = function
