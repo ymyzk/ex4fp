@@ -28,7 +28,6 @@ type ty =
   | TyFun of ty * ty
 
 let string_of_ty ty =
-  let counter = ref 0 in
   let vars = ref [] in
   let string_of_tyvar tyvar =
     let rec index_of_tyvar pos = function
@@ -41,7 +40,9 @@ let string_of_ty ty =
   | TyBool -> "bool"
   | TyVar v -> string_of_tyvar v
   | TyFun (ty1, ty2) ->
-      let str1 = string_of_ty ty1 in
+      let str1 = (match ty1 with
+          TyFun (_, _) -> "(" ^ string_of_ty ty1 ^ ")"
+        | _ -> string_of_ty ty1) in
       let str2 = string_of_ty ty2 in
       str1 ^ " -> " ^ str2
   in string_of_ty ty
