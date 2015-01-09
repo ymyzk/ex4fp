@@ -48,9 +48,12 @@ let rec unify l = match l with
     | _ -> err ("unify")
 
 let ty_prim op ty1 ty2 = match op with
-    Plus | Mult | Div -> ([(ty1, TyInt); (ty2, TyInt)], TyInt)
+    Plus | Minus | Mult | Div -> ([(ty1, TyInt); (ty2, TyInt)], TyInt)
   | Eq | Lt | Gt -> ([(ty1, TyInt); (ty2, TyInt)], TyBool)
   | Land | Lor -> ([(ty1, TyBool); (ty2, TyBool)], TyBool)
+
+let ty_prim_u op ty = match op with
+  Minus -> ([(ty, TyInt)], TyInt)
 
 let rec ty_exp tyenv = function
     Var x ->
@@ -68,6 +71,11 @@ let rec ty_exp tyenv = function
       let (eqs3, ty) = ty_prim op ty1 ty2 in
       let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ eqs3 in
       let s3 = unify eqs in (s3, subst_type s3 ty)
+  | UnaryOp (op, exp) ->
+      let (s1, ty1) = ty_exp tyenv exp in
+      let (eqs2, ty) = ty_prim_u op ty1 in
+      let eqs = (eqs_of_subst s1) @ eqs2 in
+      let s2 = unify eqs in (s2, subst_type s2 ty)
   | IfExp (exp1, exp2, exp3) ->
       let (s1, ty1) = ty_exp tyenv exp1 in
       let (s2, ty2) = ty_exp tyenv exp2 in

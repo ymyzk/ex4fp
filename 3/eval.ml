@@ -20,6 +20,8 @@ let pp_val v = print_string (string_of_exval v)
 let rec apply_prim op arg1 arg2 = match op, arg1, arg2 with
     Plus, IntV i1, IntV i2 -> IntV (i1 + i2)
   | Plus, _, _ -> err ("Both arguments must be integer: +")
+  | Minus, IntV i1, IntV i2 -> IntV (i1 - i2)
+  | Minus, _, _ -> err ("Both arguments must be integer: -")
   | Mult, IntV i1, IntV i2 -> IntV (i1 * i2)
   | Mult, _, _ -> err ("Both arguments must be integer: *")
   | Div, IntV i1, IntV i2 -> IntV (i1 / i2)
@@ -35,6 +37,10 @@ let rec apply_prim op arg1 arg2 = match op, arg1, arg2 with
   | Lor, BoolV b1, BoolV b2 -> BoolV (b1 || b2)
   | Lor, _, _ -> err ("Both arguments must be boolean: ||")
 
+let rec apply_prim_u op arg = match op, arg with
+    Minus, IntV i -> IntV (-i)
+  | Minus, _ -> err ("Argument must be integer: -")
+
 let rec eval_exp env = function
     Var x ->
       (try Environment.lookup x env with
@@ -45,6 +51,9 @@ let rec eval_exp env = function
       let arg1 = eval_exp env exp1 in
       let arg2 = eval_exp env exp2 in
       apply_prim op arg1 arg2
+  | UnaryOp (op, exp) ->
+      let arg = eval_exp env exp in
+      apply_prim_u op arg
   | IfExp (exp1, exp2, exp3) ->
       let test = eval_exp env exp1 in
         (match test with
