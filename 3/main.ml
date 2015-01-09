@@ -19,6 +19,9 @@ let rec read_eval_print env tyenv =
   | Error s ->
       Printf.printf "Eval Error: %s\n" s;
       read_eval_print env tyenv
+  | TypeError s ->
+      Printf.printf "Type Error: %s\n" s;
+      read_eval_print env tyenv
   | Failure s ->
       Printf.printf "Lexer Error: %s\n" s;
       read_eval_print env tyenv

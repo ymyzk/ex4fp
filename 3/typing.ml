@@ -1,8 +1,8 @@
 open Syntax
 
-exception Error of string
+exception TypeError of string
 
-let err s = raise (Error s)
+let err s = raise (TypeError s)
 
 (* Type Environment *)
 type tyenv = ty Environment.t
@@ -30,11 +30,11 @@ let rec unify l = match l with
       _, _ when ty1 = ty2 -> unify t
     | TyVar v, ty3
     | ty3, TyVar v ->
-        if MySet.member v (freevar_ty ty3) then err ("Type Error: unify ty")
+        if MySet.member v (freevar_ty ty3) then err ("unify ty")
         else (v, ty3) :: (unify (subst_eqs [(v, ty3)] t))
     | TyFun (ty11, ty12), TyFun (ty21, ty22) ->
         unify ((ty11, ty21) :: (ty12, ty22) :: t)
-    | _ -> err ("Type Error: unify")
+    | _ -> err ("unify")
 
 let ty_prim op ty1 ty2 = match op with
     Plus | Mult -> ([(ty1, TyInt); (ty2, TyInt)], TyInt)
