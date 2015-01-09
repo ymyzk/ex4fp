@@ -25,7 +25,7 @@ let rec read_eval_print env tyenv =
   flush stdout;
   try
     let decl = Parser.toplevel Lexer.main (Lexing.from_channel stdin) in
-    let (s, newtyenv, ty) = ty_decl tyenv decl in
+    let (newtyenv, ty) = ty_decl tyenv decl in
     let (id, newenv, v) = eval_decl env decl in
       Printf.printf "val %s : " id;
       pp_ty ty;

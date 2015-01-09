@@ -93,10 +93,10 @@ let ty_let_rec_decl tyenv id para exp =
 
 let ty_decl tyenv = function
     Exp e ->
-      let (s, ty) = ty_exp tyenv e in (s, tyenv, ty)
+      let (s, ty) = ty_exp tyenv e in (tyenv, ty)
   | Decl (id, e) ->
       let (s, ty) = ty_let_decl tyenv e in
-      (s, (Environment.extend id ty tyenv), ty)
+      (Environment.extend id ty tyenv, ty)
   | RecDecl (id, para, exp) ->
       let (s, ty) = ty_let_rec_decl tyenv id para exp in
-      (s, (Environment.extend id ty tyenv), ty)
+      (Environment.extend id ty tyenv, ty)
