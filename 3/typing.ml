@@ -4,8 +4,7 @@ exception TypeError of string
 
 let err s = raise (TypeError s)
 
-(* Type Environment *)
-type tyenv = ty Environment.t
+type tyenv = tysc Environment.t
 type subst = (tyvar * ty) list
 
 let rec subst_type sub t = match t with
@@ -16,6 +15,18 @@ let rec subst_type sub t = match t with
     | (tyv, ty') :: subt ->
         if tyv = ty then subst_type subt ty'
         else subst_type subt t)
+
+let freevar_tyenv tyenv =
+  Environment.fold_right
+    (fun tysc tyvars -> MySet.union (freevar_tysc tysc) tyvars) tyenv MySet.empty
+
+let closure ty tyenv subst =
+  let fv_tyenv' = freevar_tyenv tyenv in
+  let fv_tyenv =
+    MySet.bigunion
+      (MySet.map (fun id -> freevar_ty (subst_type subst (TyVar id))) fv_tyenv') in
+  let ids = MySet.diff (freevar_ty ty) fv_tyenv in
+  TyScheme (MySet.to_list ids, ty)
 
 let eqs_of_subst s =
   List.map (fun (tvar, ty) -> (TyVar tvar, ty)) s
@@ -43,7 +54,11 @@ let ty_prim op ty1 ty2 = match op with
 
 let rec ty_exp tyenv = function
     Var x ->
-    (try ([], Environment.lookup x tyenv) with
+    (try
+      let TyScheme (vars, ty) = Environment.lookup x tyenv in
+      let s = List.map (fun id -> (id, TyVar (fresh_tyvar ()))) vars in
+      ([], subst_type s ty)
+    with
       Environment.Not_bound -> err ("Variable not bound: " ^ x))
   | ILit _ -> ([], TyInt)
   | BLit _ -> ([], TyBool)
@@ -61,12 +76,13 @@ let rec ty_exp tyenv = function
       let s4 = unify eqs in (s4, subst_type s4 ty2)
   | LetExp (id, exp1, exp2) ->
       let (s1, ty1) = ty_exp tyenv exp1 in
-      let (s, ty) = ty_exp (Environment.extend id ty1 tyenv) exp2 in
+      let tys = closure ty1 tyenv s1 in
+      let (s, ty) = ty_exp (Environment.extend id tys tyenv) exp2 in
       let eqs = (eqs_of_subst s) @ (eqs_of_subst s1) in
       let s2 = unify eqs in (s2, subst_type s2 ty)
   | FunExp (id, exp) ->
       let domty = TyVar (fresh_tyvar ()) in
-      let s, ranty = ty_exp (Environment.extend id domty tyenv) exp in
+      let s, ranty = ty_exp (Environment.extend id (tysc_of_ty domty) tyenv) exp in
       (s, TyFun (subst_type s domty, ranty))
   | AppExp (exp1, exp2) ->
       let (s1, ty1) = ty_exp tyenv exp1 in
@@ -77,8 +93,8 @@ let rec ty_exp tyenv = function
   | LetRecExp (id, para, exp1, exp2) ->
       let ty1 = TyVar (fresh_tyvar ()) in
       let domty = TyFun (TyVar (fresh_tyvar ()), TyVar (fresh_tyvar ())) in
-      let (s2, ty2) = ty_exp (Environment.extend para ty1 (Environment.extend id domty tyenv)) exp1 in
-      let (s, ty) = ty_exp (Environment.extend id domty tyenv) exp2 in
+      let (s2, ty2) = ty_exp (Environment.extend para (tysc_of_ty ty1) (Environment.extend id (tysc_of_ty domty) tyenv)) exp1 in
+      let (s, ty) = ty_exp (Environment.extend id (tysc_of_ty domty) tyenv) exp2 in
       let eqs = (domty, TyFun (ty1, ty2)) :: (eqs_of_subst s2) @ (eqs_of_subst s) in
       let s3 = unify eqs in (s3, subst_type s3 ty)
 
@@ -88,7 +104,7 @@ let ty_let_decl tyenv exp =
 let ty_let_rec_decl tyenv id para exp =
   let ty1 = TyVar (fresh_tyvar ()) in
   let domty = TyVar (fresh_tyvar ()) in
-  let (s, ty) = ty_exp (Environment.extend para ty1 (Environment.extend id domty tyenv)) exp in
+  let (s, ty) = ty_exp (Environment.extend para (tysc_of_ty ty1) (Environment.extend id (tysc_of_ty domty) tyenv)) exp in
   (s, subst_type s ty)
 
 let ty_decl tyenv = function
@@ -96,7 +112,7 @@ let ty_decl tyenv = function
       let (s, ty) = ty_exp tyenv e in (tyenv, ty)
   | Decl (id, e) ->
       let (s, ty) = ty_let_decl tyenv e in
-      (Environment.extend id ty tyenv, ty)
+      (Environment.extend id (closure ty tyenv s) tyenv, ty)
   | RecDecl (id, para, exp) ->
       let (s, ty) = ty_let_rec_decl tyenv id para exp in
-      (Environment.extend id ty tyenv, ty)
+      (Environment.extend id (closure ty tyenv s) tyenv, ty)

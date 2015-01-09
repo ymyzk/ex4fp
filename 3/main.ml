@@ -12,12 +12,12 @@ let initial_env =
               Environment.empty)))))
 
 let initial_tyenv =
-  Environment.extend "i" TyInt
-    (Environment.extend "v" TyInt
-      (Environment.extend "x" TyInt
-        (Environment.extend "ii" TyInt
-          (Environment.extend "iii" TyInt
-            (Environment.extend "iv" TyInt
+  Environment.extend "i" (tysc_of_ty TyInt)
+    (Environment.extend "v" (tysc_of_ty TyInt)
+      (Environment.extend "x" (tysc_of_ty TyInt)
+        (Environment.extend "ii" (tysc_of_ty TyInt)
+          (Environment.extend "iii" (tysc_of_ty TyInt)
+            (Environment.extend "iv" (tysc_of_ty TyInt)
               Environment.empty)))))
 
 let rec read_eval_print env tyenv =

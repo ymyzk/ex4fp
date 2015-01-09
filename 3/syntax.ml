@@ -61,3 +61,10 @@ let rec freevar_ty = function
     TyVar var -> MySet.insert var MySet.empty
   | TyFun (ty1, ty2) -> MySet.union (freevar_ty ty1) (freevar_ty ty2)
   | _ -> MySet.empty
+
+type tysc = TyScheme of tyvar list * ty
+
+let tysc_of_ty ty = TyScheme ([], ty)
+
+let freevar_tysc = function
+  TyScheme (tyvars, ty) -> MySet.diff (freevar_ty ty) (MySet.from_list tyvars)
