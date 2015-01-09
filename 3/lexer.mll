@@ -11,11 +11,6 @@ let reservedWords = [
   ("fun", Parser.FUN);
   ("rec", Parser.REC);
 ]
-
-(*
-exception LexError of string
-let lex_err s = raise (LexError s)
-*)
 }
 
 rule main = parse

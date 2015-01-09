@@ -10,7 +10,6 @@ exception Error of string
 
 let err s = raise (Error s)
 
-(* pretty printing *)
 let rec string_of_exval = function
     IntV i -> string_of_int i
   | BoolV b -> string_of_bool b
