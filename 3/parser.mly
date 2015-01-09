@@ -3,7 +3,7 @@ open Syntax
 %}
 
 %token LPAREN RPAREN SEMISEMI
-%token PLUS MULT LT LAND LOR EQ RARROW
+%token PLUS MULT DIV LT GT LAND LOR EQ RARROW
 %token IF THEN ELSE TRUE FALSE LET IN FUN REC
 
 %token <int> INTV
@@ -36,19 +36,22 @@ LORExpr :
   | LANDExpr { $1 }
 
 LANDExpr :
-    LTExpr LAND LANDExpr { BinOp (Land, $1, $3) }
-  | LTExpr { $1 }
+    CmpExpr LAND LANDExpr { BinOp (Land, $1, $3) }
+  | CmpExpr { $1 }
 
-LTExpr :
-    PExpr LT PExpr { BinOp (Lt, $1, $3) }
+CmpExpr :
+    CmpExpr EQ PExpr { BinOp (Eq, $1, $3) }
+  | CmpExpr LT PExpr { BinOp (Lt, $1, $3) }
+  | CmpExpr GT PExpr { BinOp (Gt, $1, $3) }
   | PExpr { $1 }
 
 PExpr :
-    PExpr PLUS MExpr { BinOp (Plus, $1, $3) }
-  | MExpr { $1 }
+    PExpr PLUS MDExpr { BinOp (Plus, $1, $3) }
+  | MDExpr { $1 }
 
-MExpr :
-    MExpr MULT AppExpr { BinOp (Mult, $1, $3) }
+MDExpr :
+    MDExpr MULT AppExpr { BinOp (Mult, $1, $3) }
+  | MDExpr DIV AppExpr { BinOp (Div, $1, $3) }
   | AppExpr { $1 }
 
 AppExpr :

@@ -37,8 +37,8 @@ let rec unify l = match l with
     | _ -> err ("unify")
 
 let ty_prim op ty1 ty2 = match op with
-    Plus | Mult -> ([(ty1, TyInt); (ty2, TyInt)], TyInt)
-  | Lt -> ([(ty1, TyInt); (ty2, TyInt)], TyBool)
+    Plus | Mult | Div -> ([(ty1, TyInt); (ty2, TyInt)], TyInt)
+  | Eq | Lt | Gt -> ([(ty1, TyInt); (ty2, TyInt)], TyBool)
   | Land | Lor -> ([(ty1, TyBool); (ty2, TyBool)], TyBool)
 
 let rec ty_exp tyenv = function

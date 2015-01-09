@@ -25,7 +25,9 @@ rule main = parse
 | ";;" { Parser.SEMISEMI }
 | "+" { Parser.PLUS }
 | "*" { Parser.MULT }
+| "/" { Parser.DIV }
 | "<" { Parser.LT }
+| ">" { Parser.GT }
 | "&&" { Parser.LAND }
 | "||" { Parser.LOR }
 | "=" { Parser.EQ }
